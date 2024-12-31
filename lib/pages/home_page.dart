@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../services/firestore.dart';
@@ -59,6 +60,35 @@ class _HomePageState extends State<HomePage> {
         onPressed: openUserBox,
         child: const Icon(Icons.add),
         ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: firestoreService.getUsersStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List userList = snapshot.data!.docs;
+
+            return ListView.builder(
+              itemCount: userList.length,
+              itemBuilder: (context, index) {
+                DocumentSnapshot document = userList[index];
+                String docID = document.id;
+
+                Map<String, dynamic> data = 
+                  document.data() as Map<String, dynamic>;
+                
+                String userName = data['name'];
+                String userEmail = data['email'];
+
+                return ListTile(
+                  title: Text(userName),
+                  subtitle: Text(userEmail),
+                );
+              } 
+            );
+          } else {
+            return const Text("Sem Usuáarios...");
+          }
+        },
+      ),
     );
   }
 }
