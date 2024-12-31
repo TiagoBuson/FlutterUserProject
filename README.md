@@ -1,16 +1,9 @@
-# flutter_user_project
+# Flutter User Project
 
-A new Flutter project.
+Projeto simples de criação, listagem, update e delete de usuários, em Flutter, utilizando Firebase para base de dados.
 
-## Getting Started
+![Projeto](/lib/imgs/FlutterUserProject.png)
 
-This project is a starting point for a Flutter application.
+![Adicionar User](/lib/imgs/FlutterAddUser.png)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Update User](/lib/imgs/FlutterUpdateUser.png)
