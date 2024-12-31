@@ -11,55 +11,100 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final FirestoreService firestoreService = FirestoreService();
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void openUserBox() {
+  void openUserBox({String? docID}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        content: 
-          Column(
+        title: Text(docID == null ? "Adicionar Usuário" : "Editar Usuário"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Nome"),
               TextField(
                 controller: nameController,
+                decoration: InputDecoration(
+                  labelText: "Nome",
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(),
+                ),
               ),
-              Text("Email"),
+              SizedBox(height: 10),
               TextField(
                 controller: emailController,
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                ),
               ),
-              Text("Senha"),
+              SizedBox(height: 10),
               TextField(
                 controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: "Senha",
+                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ],
           ),
+        ),
         actions: [
-          ElevatedButton(onPressed: () {
-            firestoreService.addUser(nameController.text, emailController.text, passwordController.text);
-
-            nameController.clear();
-            emailController.clear();
-            passwordController.clear();
-          },
-          child: Text("Add"))
+          TextButton(
+            onPressed: () {
+              nameController.clear();
+              emailController.clear();
+              passwordController.clear();
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (docID == null) {
+                firestoreService.addUser(
+                  nameController.text,
+                  emailController.text,
+                  passwordController.text,
+                );
+              } else {
+                firestoreService.updateUser(
+                  docID,
+                  nameController.text,
+                  emailController.text,
+                  passwordController.text,
+                );
+              }
+              nameController.clear();
+              emailController.clear();
+              passwordController.clear();
+              Navigator.of(context).pop();
+            },
+            child: Text(docID == null ? "Adicionar" : "Salvar"),
+          ),
         ],
-    ));
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Usuários"),),
+      appBar: AppBar(
+        title: Text("Usuários"),
+        centerTitle: true,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: openUserBox,
         child: const Icon(Icons.add),
-        ),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreService.getUsersStream(),
         builder: (context, snapshot) {
@@ -67,25 +112,55 @@ class _HomePageState extends State<HomePage> {
             List userList = snapshot.data!.docs;
 
             return ListView.builder(
+              padding: EdgeInsets.all(8.0),
               itemCount: userList.length,
               itemBuilder: (context, index) {
                 DocumentSnapshot document = userList[index];
                 String docID = document.id;
 
-                Map<String, dynamic> data = 
-                  document.data() as Map<String, dynamic>;
-                
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+
                 String userName = data['name'];
                 String userEmail = data['email'];
 
-                return ListTile(
-                  title: Text(userName),
-                  subtitle: Text(userEmail),
+                return Card(
+                  elevation: 4,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        userName[0].toUpperCase(),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    title: Text(userName, style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(userEmail),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () => openUserBox(docID: docID),
+                          icon: Icon(Icons.edit, color: Colors.orange),
+                        ),
+                        IconButton(
+                          onPressed: () => firestoreService.deleteUser(docID),
+                          icon: Icon(Icons.delete, color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
-              } 
+              },
             );
           } else {
-            return const Text("Sem Usuáarios...");
+            return Center(
+              child: Text(
+                "Nenhum usuário encontrado..",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
           }
         },
       ),

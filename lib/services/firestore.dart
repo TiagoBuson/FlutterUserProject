@@ -24,5 +24,18 @@ class FirestoreService {
   }
 
   //UPDATE
-  
+  Future<void> updateUser(String docID, String newName, String newEmail, String newPassword) {
+    return users.doc(docID).update({
+      'name': newName,
+      'email': newEmail,
+      'password': newPassword,
+      'timestamp': Timestamp.now(),
+    });
+  }
+
+  //DELETE
+  Future<void> deleteUser(String docID) {
+    return users.doc(docID).delete();
+  }
+
 }
